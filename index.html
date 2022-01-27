@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glin Prison Stylophone</title>
+    <!--Largement pompé des scripts de Danziger sur le Stylophone-->
+    <link rel="stylesheet" href="assets/css/style.css">
+
+</head>
+
+<body id="bg">
+
+    <main class="parchemin">
+        <section>
+            <svg id="keys" class="keyboard" fill="currentColor" width="590" viewBox="0 0 590 89">
+
+          <rect data-freq="110.8" x="2" width="47" height="89"></rect>
+          <rect data-freq="124.4" x="51" width="47" height="89"></rect>
+          <rect data-freq="131.8" x="100" width="47" height="89"></rect>
+          <rect data-freq="147.7" x="149" width="47" height="89"></rect>
+          <rect data-freq="165.6" x="198" width="47" height="89"></rect>
+          <rect data-freq="175.4" x="247" width="47" height="89"></rect>
+          <rect data-freq="196.6" x="296" width="47" height="89"></rect>
+          <rect data-freq="220.4" x="345" width="47" height="89"></rect>
+          <rect data-freq="247.1" x="394" width="47" height="89"></rect>
+          <rect data-freq="261.7" x="443" width="47" height="89"></rect>
+          <rect data-freq="293.4" x="492" width="47" height="89"></rect>
+          <rect data-freq="328.4" x="541" width="47" height="89"></rect>
+
+          <polyline data-freq="117.5" points="24.5,0  71.5,0  71.5,42  24.5,42  24.5,0"></polyline>
+          <polyline data-freq="139.6" points="123.5,0  170.5,0  170.5,42  123.5,42  123.5,0"></polyline>
+          <polyline data-freq="156.4" points="172.5,0  219.5,0  219.5,42  172.5,42  172.5,0"></polyline>
+          <polyline data-freq="185.7" points="271.5,0  318.5,0  318.5,42  271.5,42  271.5,0"></polyline>
+          <polyline data-freq="208.2" points="320.5,0  367.5,0  367.5,42  320.5,42  320.5,0"></polyline>
+          <polyline data-freq="233.4" points="369.5,0  416.5,0  416.5,42  369.5,42  369.5,0"></polyline>
+          <polyline data-freq="277.0" points="467.5,0  514.5,0  514.5,42  467.5,42  467.5,0"></polyline>
+          <polyline data-freq="310.5" points="516.5,0  563.5,0  563.5,42  516.5,42  516.5,0"></polyline>
+
+        </svg>
+        </section>
+    </main>
+    <script>
+        "use strict";
+
+        try {
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            window.audioContext = new window.AudioContext();
+        } catch (e) {
+            console.log("No Web Audio API support");
+        }
+
+        // Create Web Audio Context.
+        var context = new window.AudioContext(),
+            currentOscillator,
+            noteOn = false;
+
+        var vibratoOsc,
+            vibratoOn = false;
+
+
+        function vibrato() {
+            if (vibratoOn) {
+                vibratoOsc = context.createOscillator();
+            }
+
+        }
+
+        // https://github.com/cwilso/Audio-Input-Effects/blob/master/js/effects.js#L478
+
+
+
+        var cspeed = 3.5,
+            cdelay = 0.04,
+            cdepth = 0.002;
+        var wetGain = audioContext.createGain();
+
+        function createVibrato() {
+            var delayNode = audioContext.createDelay();
+            delayNode.delayTime.value = 0.5;
+            cdelay = delayNode;
+
+            var inputNode = audioContext.createGain();
+
+            var osc = audioContext.createOscillator();
+            var gain = audioContext.createGain();
+
+            gain.gain.value = 0.5;
+            cdepth = gain;
+
+            osc.type = 'sine';
+            osc.frequency.value = 0.5;
+            cspeed = osc;
+
+            osc.connect(gain);
+            gain.connect(delayNode.delayTime);
+            inputNode.connect(delayNode);
+            delayNode.connect(wetGain);
+            osc.start(0);
+
+            return inputNode;
+        }
+
+
+        // From http://tympanus.net/Tutorials/WebAudioStylophone/
+        var stopNote = function() {
+
+            // Stop the current Oscillator from playing then disconnect it.
+            if (currentOscillator) {
+                currentOscillator.stop(0);
+                currentOscillator.disconnect();
+            }
+        };
+
+
+        // From http://tympanus.net/Tutorials/WebAudioStylophone/
+        function playFreq(frequency) {
+
+            // Create oscillator and gain node.
+            var oscillator = context.createOscillator(),
+                gainNode = context.createGain();
+
+
+            //console.log("playFreq(" + frequency + ")")
+
+            createVibrato();
+
+            // Disconnect existing oscillator if there is one.
+            if (currentOscillator) {
+                currentOscillator.disconnect();
+            }
+
+            // Set the type and frequency of the oscillator.
+            oscillator.type = "sawtooth";
+            oscillator.frequency.value = frequency;
+
+            // Set volume of the oscillator.
+            gainNode.gain.value = 0.1;
+
+            // Route oscillator through vibrato node.
+            //oscillator.connect(createVibrato);
+            //createVibrato.connect(context.destination);
+
+            // Route oscillator through gain node to speakers.
+            oscillator.connect(gainNode);
+            //if (vibratoOn) {
+            //  gainNode.connect(vibratoOn.frequency);
+            //}
+            gainNode.connect(context.destination);
+            //vibratoOn.connect(context.destination);
+
+            // Set the current oscillator to the one we've just created.
+            currentOscillator = oscillator;
+
+            // Start oscillator playing.
+            oscillator.start(0);
+        };
+
+
+        // Event delegation for all keys
+
+        function listenKeys(e) {
+            if (e.target && (e.target.nodeName === "rect" || e.target.nodeName === "polyline")) {
+
+                switch (e.type) {
+                    case "mousedown":
+                        noteOn = true;
+                        playFreq(e.target.getAttribute("data-freq"));
+                        break;
+                    case "mouseover":
+                        if (noteOn) {
+                            playFreq(e.target.getAttribute("data-freq"));
+                        }
+                        break;
+                    case "mouseup":
+                        noteOn = false;
+                        stopNote();
+                        break;
+                }
+
+            }
+        }
+
+        var keys = document.getElementById("keys");
+        if (keys) {
+            keys.addEventListener("mousedown", listenKeys, false);
+            keys.addEventListener("mouseover", listenKeys, false);
+            keys.addEventListener("mouseup", listenKeys, false);
+        }
+    </script>
+
+    <script src="assets/js/script.js"></script>
+    <script>
+        document.onmousemove = suitsouris;
+
+        function suitsouris(evenement) {
+            let x = 0;
+            let y = 0;
+            if (navigator.appName == "Microsoft Internet Explorer") {
+                x = event.x + document.body.scrollLeft;
+                y = event.y + document.body.scrollTop;
+            } else {
+                x = evenement.pageX;
+                y = evenement.pageY;
+            }
+            document.getElementById("bras").style.position = "absolute";
+            document.getElementById("bras").style.left = (x - document.getElementById("bras").offsetWidth - 20) + 'px';
+            document.getElementById("bras").style.top = (y - document.getElementById("bras").offsetHeight + 1794) + 'px';
+            document.getElementById("bras").style.transformOrigin = "top right";
+            document.getElementById("bras").style.transform = "rotate(" + x / 20 + "deg)";
+
+            document.getElementById("bg").style.backgroundPosition = (x / 75) + "%" + (y / 75) + "%";
+        }
+    </script>
+    <img id="bras" class="bras" src="assets/img/Glin bras stylo.png">
+
+
+</body>
+
+</html>

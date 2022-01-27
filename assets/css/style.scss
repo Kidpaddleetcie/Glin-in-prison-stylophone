@@ -1,0 +1,44 @@
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    background-image: url("../img/BACK1.png");
+    background-repeat: no-repeat;
+    background-size: 110%;
+    overflow: hidden;
+    cursor: url('data:image/x-icon;base64,AAACAAEAICACAAIAAgAwAQAAFgAAACgAAAAgAAAAQAAAAAEAAQAAAAAAgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAEgAAACEAAAAhAAAAEgAAAAwAAAA///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////P////h////wP///8D////h////8////8='), auto;
+}
+
+.parchemin {
+    background-image: url("../img/Glin\ bras\ parchemin.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100vw;
+    height: 100vh;
+}
+
+section {
+    transform: scale(0.8);
+    position: fixed;
+    bottom: 55vh;
+    right: 55vh;
+    margin: 0;
+    svg {
+        color: rgb(112, 10, 10);
+        polyline {
+            color: rgb(54, 4, 4);
+            &:active,
+            &:hover {
+                color: rgb(117, 54, 54);
+                transform: translateY(-2px);
+            }
+        }
+        rect {
+            &:active,
+            &:hover {
+                color: rgb(122, 29, 29);
+                transform: translateY(-2px);
+            }
+        }
+    }
+}
